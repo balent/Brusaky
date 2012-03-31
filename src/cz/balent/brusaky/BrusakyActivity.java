@@ -29,7 +29,7 @@ public class BrusakyActivity extends Activity {
 	private TextView seriesCountTextView;
 	private TextView statusLabelTextView;
 	private TextView timeCounter;
-	
+
 	private enum SoundType {
 		WAIT, START, STOP;
 	}
@@ -68,8 +68,7 @@ public class BrusakyActivity extends Activity {
 		timeCounter = (TextView) findViewById(R.id.textView5);
 
 		class ExerciseRunner extends Thread {
-			
-			
+
 			private volatile boolean shutdown = false;
 
 			private void sleepSeconds(int i) {
@@ -102,11 +101,11 @@ public class BrusakyActivity extends Activity {
 						}
 						mediaPlayer.start();
 						while (mediaPlayer.isPlaying()) {
-							sleepMiliSeconds(100);
+							sleepMiliSeconds(1000);
 						}
+						mediaPlayer.stop();
 						mediaPlayer.release();
 						mediaPlayer = null;
-
 					}
 				};
 				Thread t = new Thread(r);
@@ -114,9 +113,6 @@ public class BrusakyActivity extends Activity {
 			}
 
 			public void run() {
-				if (shutdown == true) {
-					return;
-				}
 				setTextCorrectly(statusLabelTextView, "Priprav sa");
 				for (int i = 5; i > 0; i--) {
 					if (shutdown == true) {
@@ -134,7 +130,8 @@ public class BrusakyActivity extends Activity {
 
 				for (int series = totalSeries; series > 0; series--) {
 					setTextCorrectly(statusLabelTextView, "Makaj");
-					setTextCorrectly(seriesCountTextView,String.valueOf(series));
+					setTextCorrectly(seriesCountTextView,
+							String.valueOf(series));
 					for (int time = crunchesTime; time > 0; time--) {
 						if (shutdown == true) {
 							return;
@@ -147,7 +144,8 @@ public class BrusakyActivity extends Activity {
 					}
 					if (series > 1) {
 						setTextCorrectly(statusLabelTextView, "Oddych");
-						setTextCorrectly(seriesCountTextView,String.valueOf(series - 1));
+						setTextCorrectly(seriesCountTextView,
+								String.valueOf(series - 1));
 						for (int time = restTime; time > 0; time--) {
 							if (shutdown == true) {
 								return;
@@ -155,7 +153,8 @@ public class BrusakyActivity extends Activity {
 							updateTime(time);
 							sleepSeconds(1);
 							if ((time < 6) && (time > 1)) {
-								setTextCorrectly(statusLabelTextView, "Priprav sa");
+								setTextCorrectly(statusLabelTextView,
+										"Priprav sa");
 								playSound(SoundType.WAIT);
 							}
 							if (time == 1) {
@@ -164,17 +163,19 @@ public class BrusakyActivity extends Activity {
 						}
 					}
 				}
-				setTextCorrectly(seriesCountTextView,String.valueOf(totalSeries));
-				setTextCorrectly(timeCounter, "00:00");
+				setTextCorrectly(seriesCountTextView,
+						String.valueOf(totalSeries));
+				updateTime(0);
 				setTextCorrectly(statusLabelTextView, "Cas nebezi");
-				setStartButtonText("Start");
+				setTextCorrectly(startButton, "Start");
 				isRunning = false;
 			}
 
 			public void shutdown() {
 				shutdown = true;
 			}
-		};
+		}
+		;
 
 		startButton.setOnClickListener(new View.OnClickListener() {
 			private ExerciseRunner exerciseRunner;
@@ -193,7 +194,8 @@ public class BrusakyActivity extends Activity {
 				} else {
 					isRunning = false;
 					startButton.setText("Start");
-					setTextCorrectly(seriesCountTextView, String.valueOf(totalSeries));
+					setTextCorrectly(seriesCountTextView,
+							String.valueOf(totalSeries));
 					exerciseRunner.shutdown();
 					setTextCorrectly(timeCounter, "00:00");
 					wl.release();
@@ -219,7 +221,8 @@ public class BrusakyActivity extends Activity {
 
 			public void onClick(View v) {
 				totalSeries++;
-				setTextCorrectly(seriesCountTextView,String.valueOf(totalSeries));
+				setTextCorrectly(seriesCountTextView,
+						String.valueOf(totalSeries));
 			}
 		});
 
@@ -228,7 +231,8 @@ public class BrusakyActivity extends Activity {
 			public void onClick(View v) {
 				if (totalSeries > 1) {
 					totalSeries--;
-					setTextCorrectly(seriesCountTextView, String.valueOf(totalSeries));
+					setTextCorrectly(seriesCountTextView,
+							String.valueOf(totalSeries));
 				}
 
 			}
@@ -253,26 +257,14 @@ public class BrusakyActivity extends Activity {
 		return String.format("%02d:%02d", seconds / 60, seconds % 60);
 	}
 
-	private void setTextView(TextView textView, String prefix, int seconds) {
-		setTextCorrectly(textView, prefix + getStringTime(seconds));
-	}
-
-	private void updateTime(int i) {
-		setTextView(timeCounter, "", i);
+	private void updateTime(int seconds) {
+		setTextCorrectly(timeCounter, getStringTime(seconds));
 	}
 
 	private void setTextCorrectly(final TextView textView, final String text) {
 		textView.post(new Runnable() {
 			public void run() {
 				textView.setText(text);
-			}
-		});
-	}
-
-	private void setStartButtonText(final String buttonText) {
-		startButton.post(new Runnable() {
-			public void run() {
-				startButton.setText(buttonText);
 			}
 		});
 	}
