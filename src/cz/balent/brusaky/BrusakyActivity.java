@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -54,6 +55,7 @@ public class BrusakyActivity extends Activity {
 
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
 		timeButton = (Button) findViewById(R.id.button1);
 		restButton = (Button) findViewById(R.id.button2);
