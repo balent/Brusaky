@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string name="hello">Hello World, BrusakyActivity!</string>
-    <string name="app_name">Brusaky</string>
-
+    <string name="app_name">Brušáky</string>
+    <string name="time_stopped">Čas nebeží</string>
+    <string name="prepare">Priprav sa</string>
+    <string name="work">Makaj</string>
+    <string name="rest">Oddych</string>
+    <string name="start">Štart</string>
+    <string name="stop">Stop</string>
+    <string name="big_label">BRUŠÁKY</string>
+    <string name="series_length">Dĺžka série:</string>
+    <string name="series_length_default">01:15</string>
+    <string name="series_length_change">Zmeň dĺžku série</string>
+    <string name="rest_length">Dĺžka pauzy:</string>
+    <string name="rest_length_default">00:30</string>
+    <string name="rest_length_change">Zmeň dĺžku pauzy</string>
+    <string name="series_left">Ostáva sérií:</string>
+    <string name="series_left_default">4</string>
+    <string name="plus_sign">+</string>
+    <string name="minus_sign">-</string>
+    <string name="time_zero">00:00</string>
 </resources>

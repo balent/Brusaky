@@ -14,7 +14,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 public class BrusakyActivity extends Activity {
-	private int crunchesTime = 70;
+	private int crunchesTime = 75;
 	private int restTime = 30;
 	private int totalSeries = 4;
 	private boolean isRunning = false;
@@ -115,7 +115,7 @@ public class BrusakyActivity extends Activity {
 			}
 
 			public void run() {
-				setTextCorrectly(statusLabelTextView, "Priprav sa");
+				setTextCorrectly(statusLabelTextView, getString(R.string.prepare));
 				for (int i = 5; i > 0; i--) {
 					if (shutdown == true) {
 						return;
@@ -131,7 +131,7 @@ public class BrusakyActivity extends Activity {
 				}
 
 				for (int series = totalSeries; series > 0; series--) {
-					setTextCorrectly(statusLabelTextView, "Makaj");
+					setTextCorrectly(statusLabelTextView, getString(R.string.work));
 					setTextCorrectly(seriesCountTextView,
 							String.valueOf(series));
 					for (int time = crunchesTime; time > 0; time--) {
@@ -145,7 +145,7 @@ public class BrusakyActivity extends Activity {
 						}
 					}
 					if (series > 1) {
-						setTextCorrectly(statusLabelTextView, "Oddych");
+						setTextCorrectly(statusLabelTextView, getString(R.string.rest));
 						setTextCorrectly(seriesCountTextView,
 								String.valueOf(series - 1));
 						for (int time = restTime; time > 0; time--) {
@@ -156,7 +156,7 @@ public class BrusakyActivity extends Activity {
 							sleepSeconds(1);
 							if ((time < 6) && (time > 1)) {
 								setTextCorrectly(statusLabelTextView,
-										"Priprav sa");
+										getString(R.string.prepare));
 								playSound(SoundType.WAIT);
 							}
 							if (time == 1) {
@@ -168,8 +168,8 @@ public class BrusakyActivity extends Activity {
 				setTextCorrectly(seriesCountTextView,
 						String.valueOf(totalSeries));
 				updateTime(0);
-				setTextCorrectly(statusLabelTextView, "Cas nebezi");
-				setTextCorrectly(startButton, "Start");
+				setTextCorrectly(statusLabelTextView, getString(R.string.time_stopped));
+				setTextCorrectly(startButton, getString(R.string.start));
 				isRunning = false;
 			}
 
@@ -183,23 +183,23 @@ public class BrusakyActivity extends Activity {
 			private ExerciseRunner exerciseRunner;
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 			PowerManager.WakeLock wl = pm.newWakeLock(
-					PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+					PowerManager.SCREEN_DIM_WAKE_LOCK, "Robo Tag");
 
 			public void onClick(View v) {
 
 				if (isRunning == false) {
 					wl.acquire();
 					isRunning = true;
-					startButton.setText("Stop");
+					startButton.setText(getString(R.string.stop));
 					exerciseRunner = new ExerciseRunner();
 					exerciseRunner.start();
 				} else {
 					isRunning = false;
-					startButton.setText("Start");
+					startButton.setText(getString(R.string.start));
 					setTextCorrectly(seriesCountTextView,
 							String.valueOf(totalSeries));
 					exerciseRunner.shutdown();
-					setTextCorrectly(timeCounter, "00:00");
+					updateTime(0);
 					wl.release();
 				}
 			}
