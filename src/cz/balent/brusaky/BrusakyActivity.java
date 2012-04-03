@@ -17,7 +17,6 @@ public class BrusakyActivity extends Activity {
     private int crunchesTime = 75;
     private int restTime = 30;
     private int totalSeries = 4;
-    private boolean isRunning = false;
 
     private Button timeButton;
     private Button restButton;
@@ -34,13 +33,16 @@ public class BrusakyActivity extends Activity {
     private enum SoundType {
         WAIT, START, STOP;
     }
-    
+
     private enum AppState {
         STOPPED, FORCE_STOP, PREPARE, CRUNCHES, REST;
     }
-    
+
     private AppState appState = AppState.STOPPED;
     private int counter = 0;
+    private int seriesCounter = 0;
+    private PowerManager pm;
+    private PowerManager.WakeLock wl;
 
     private TimePickerDialog.OnTimeSetListener crunchesTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
@@ -63,6 +65,8 @@ public class BrusakyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Robo Tag");
 
         timeButton = (Button) findViewById(R.id.button1);
         restButton = (Button) findViewById(R.id.button2);
@@ -78,8 +82,6 @@ public class BrusakyActivity extends Activity {
 
         class ExerciseRunner extends Thread {
 
-            private volatile boolean shutdown = false;
-
             private void sleepMiliSeconds(int i) {
                 try {
                     Thread.sleep(i);
@@ -89,7 +91,6 @@ public class BrusakyActivity extends Activity {
             }
 
             private void playSound(final SoundType st) {
-
                 Runnable r = new Runnable() {
                     public void run() {
                         MediaPlayer mediaPlayer = null;
@@ -114,87 +115,108 @@ public class BrusakyActivity extends Activity {
                 t.start();
             }
 
-            public void run() {
-                setTextCorrectly(statusLabelTextView, getString(R.string.prepare));
-                for (int i = 5; i > 0; i--) {
-                    if (shutdown == true) {
-                        return;
-                    }
-                    updateTime(i);
-                    sleepMiliSeconds(1000);
-
-                    if (i > 1) {
-                        playSound(SoundType.WAIT);
-                    } else {
-                        playSound(SoundType.START);
-                    }
-                }
-
-                for (int series = totalSeries; series > 0; series--) {
-                    setTextCorrectly(statusLabelTextView, getString(R.string.work));
-                    setTextCorrectly(seriesCountTextView, String.valueOf(series));
-                    for (int time = crunchesTime; time > 0; time--) {
-                        if (shutdown == true) {
-                            return;
-                        }
-                        updateTime(time);
-                        sleepMiliSeconds(1000);
-                        if (time == 1) {
-                            playSound(SoundType.STOP);
-                        }
-                    }
-                    if (series > 1) {
-                        setTextCorrectly(statusLabelTextView, getString(R.string.rest));
-                        setTextCorrectly(seriesCountTextView, String.valueOf(series - 1));
-                        for (int time = restTime; time > 0; time--) {
-                            if (shutdown == true) {
-                                return;
-                            }
-                            updateTime(time);
-                            sleepMiliSeconds(1000);
-                            if ((time < 6) && (time > 1)) {
-                                setTextCorrectly(statusLabelTextView, getString(R.string.prepare));
-                                playSound(SoundType.WAIT);
-                            }
-                            if (time == 1) {
-                                playSound(SoundType.START);
-                            }
-                        }
-                    }
-                }
-                setTextCorrectly(seriesCountTextView, String.valueOf(totalSeries));
-                updateTime(0);
+            private void setStopped() {
                 setTextCorrectly(statusLabelTextView, getString(R.string.time_stopped));
                 setTextCorrectly(startButton, getString(R.string.start));
-                isRunning = false;
+                updateTime(0);
+                wl.release();
             }
 
-            public void shutdown() {
-                shutdown = true;
+            private void setPrepare() {
+                setTextCorrectly(statusLabelTextView, getString(R.string.prepare));
+                updateTime(counter);
+                playSound(SoundType.WAIT);
+            }
+
+            private void setCrunches() {
+                setTextCorrectly(statusLabelTextView, getString(R.string.work));
+                updateTime(counter);
+                if (counter == crunchesTime) {
+                    playSound(SoundType.START);
+                }
+            }
+
+            private void setRest() {
+                updateTime(counter + 4);
+                setTextCorrectly(statusLabelTextView, getString(R.string.rest));
+                if (counter + 4 == restTime) {
+                    playSound(SoundType.STOP);
+                }
+            }
+
+            private void setState(AppState appState) {
+                if (appState == AppState.STOPPED) {
+                    setStopped();
+                } else if (appState == AppState.PREPARE) {
+                    setPrepare();
+                } else if (appState == AppState.CRUNCHES) {
+                    setCrunches();
+                } else if (appState == AppState.REST) {
+                    setRest();
+                }
+            }
+
+            public void run() {
+                sleepMiliSeconds(1000);
+
+                while (true) {
+                    // Simple state machine
+                    if (appState == AppState.FORCE_STOP) {
+                        appState = AppState.STOPPED;
+                        seriesCounter = 0;
+                        counter = 0;
+                        setStopped();
+                        return;
+                    }
+
+                    if (counter == 0) {
+                        if ((appState == AppState.CRUNCHES)
+                                && (seriesCounter == totalSeries)) {
+                            appState = AppState.STOPPED;
+                            seriesCounter = 0;
+                            counter = 0;
+                            // Play sound at the end of all series 
+                            playSound(SoundType.STOP);
+                            setStopped();
+                            return;
+                        }
+
+                        if (appState == AppState.STOPPED) {
+                            appState = AppState.PREPARE;
+                            counter = 4;
+                        } else if (appState == AppState.PREPARE) {
+                            appState = AppState.CRUNCHES;
+                            counter = crunchesTime;
+                            seriesCounter++;
+                        } else if (appState == AppState.CRUNCHES) {
+                            appState = AppState.REST;
+                            counter = restTime - 4;
+                        } else if (appState == AppState.REST) {
+                            appState = AppState.PREPARE;
+                            counter = 4;
+                        }
+                    }
+                    setState(appState);
+                    counter--;
+                    sleepMiliSeconds(1000);
+                }
             }
         }
         ;
 
         startButton.setOnClickListener(new View.OnClickListener() {
             private ExerciseRunner exerciseRunner;
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Robo Tag");
 
             public void onClick(View v) {
 
-                if (isRunning == false) {
+                if (appState == AppState.STOPPED) {
                     wl.acquire();
-                    isRunning = true;
                     startButton.setText(getString(R.string.stop));
                     exerciseRunner = new ExerciseRunner();
                     exerciseRunner.start();
                 } else {
-                    isRunning = false;
                     startButton.setText(getString(R.string.start));
-                    setTextCorrectly(seriesCountTextView, String.valueOf(totalSeries));
-                    exerciseRunner.shutdown();
-                    updateTime(0);
-                    wl.release();
+                    appState = AppState.FORCE_STOP;
                 }
             }
         });
