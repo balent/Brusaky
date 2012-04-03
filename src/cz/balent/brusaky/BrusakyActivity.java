@@ -34,6 +34,13 @@ public class BrusakyActivity extends Activity {
     private enum SoundType {
         WAIT, START, STOP;
     }
+    
+    private enum AppState {
+        STOPPED, FORCE_STOP, PREPARE, CRUNCHES, REST;
+    }
+    
+    private AppState appState = AppState.STOPPED;
+    private int counter = 0;
 
     private TimePickerDialog.OnTimeSetListener crunchesTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
