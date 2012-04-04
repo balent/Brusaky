@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Brušáky</string>
-    <string name="time_stopped">Čas nebeží</string>
-    <string name="prepare">Priprav sa</string>
-    <string name="work">Makaj</string>
-    <string name="rest">Oddych</string>
-    <string name="start">Štart</string>
+    <string name="app_name">Crunches</string>
+    <string name="time_stopped">Not running</string>
+    <string name="prepare">Get ready</string>
+    <string name="work">Workout!!!</string>
+    <string name="rest">Rest</string>
+    <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="big_label">BRUŠÁKY</string>
-    <string name="series_length">Dĺžka série:</string>
+    <string name="big_label">CRUNCHES</string>
+    <string name="series_length">Set length:</string>
     <string name="series_length_default">01:15</string>
-    <string name="series_length_change">Zmeň dĺžku série</string>
-    <string name="rest_length">Dĺžka pauzy:</string>
+    <string name="series_length_change">Change set length</string>
+    <string name="rest_length">Rest length:</string>
     <string name="rest_length_default">00:30</string>
-    <string name="rest_length_change">Zmeň dĺžku pauzy</string>
-    <string name="series_left">Počet sérií:</string>
+    <string name="rest_length_change">Change rest length</string>
+    <string name="series_left">Sets count:</string>
     <string name="series_left_default">4</string>
     <string name="plus_sign">+</string>
     <string name="minus_sign">-</string>
